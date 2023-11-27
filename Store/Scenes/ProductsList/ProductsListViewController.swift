@@ -99,63 +99,63 @@ extension ProductsListViewController: UITableViewDataSource, UITableViewDelegate
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         products.count
     }
-        
-        func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "ProductCell", for: indexPath)
-                    as? ProductCell else {
-                fatalError("Could not dequeue cell with identifier: productCell")
-            }
-            cell.reload(with: products[indexPath.row])
-            cell.delegate = self
-            return cell
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ProductCell", for: indexPath)
+                as? ProductCell else {
+            fatalError("Could not dequeue cell with identifier: productCell")
+        }
+        cell.reload(with: products[indexPath.row])
+        cell.delegate = self
+        return cell
+    }
+}
+
+extension ProductsListViewController: ProductsListViewModelDelegate {
+    
+    func showError(_ receivedError: Error) {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            let alert = UIAlertController(title: "Error", message: receivedError.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alert, animated: true)
         }
     }
     
-    extension ProductsListViewController: ProductsListViewModelDelegate {
-        
-        func productsAmountChanged() {
-            totalPriceLbl.text = "Total price: \(productsViewModel.totalPrice ?? 0)"
+    func productsFetched(_ products: [ProductModel]) {
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            self.products = products
+            self.productsViewModel.products = products
+            self.productsTableView.reloadData()
         }
-        
-        func showError(_ receivedError: Error) {
-            DispatchQueue.main.async {
-                self.activityIndicator.stopAnimating()
-                let alert = UIAlertController(title: "Error", message: receivedError.localizedDescription, preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "OK", style: .default))
-                self.present(alert, animated: true)
-            }
-        }
-        
-        func productsFetched(_ products: [ProductModel]) {
-            DispatchQueue.main.async {
-                self.activityIndicator.stopAnimating()
-                self.products = products
-                self.productsViewModel.products = products
-                self.productsTableView.reloadData()
+    }
+    
+    func productsAmountChanged() {
+        totalPriceLbl.text = "Total price: \(productsViewModel.totalPrice ?? 0)"
+    }
+}
+
+extension ProductsListViewController: ProductCellDelegate {
+    
+    func removeProduct(for cell: ProductCell) {
+        if let indexPath = productsTableView.indexPath(for: cell) {
+            productsViewModel.removeProduct(at: indexPath.row)
+            
+            if let updatedInfo = productsViewModel.products?[indexPath.row] {
+                cell.updateQuantityAndStockLabel(with: updatedInfo)
             }
         }
     }
     
-    extension ProductsListViewController: ProductCellDelegate {
-        
-        func removeProduct(for cell: ProductCell) {
-            if let indexPath = productsTableView.indexPath(for: cell) {
-                productsViewModel.removeProduct(at: indexPath.row)
-                
-                if let updatedInfo = productsViewModel.products?[indexPath.row] {
-                    cell.updateQuantityAndStockLabel(with: updatedInfo)
-                }
-            }
-        }
-        
-        func addProduct(for cell: ProductCell) {
-            if let indexPath = productsTableView.indexPath(for: cell) {
-                productsViewModel.addProduct(at: indexPath.row)
-                
-                if let updatedInfo = productsViewModel.products?[indexPath.row] {
-                    cell.updateQuantityAndStockLabel(with: updatedInfo)
-                }
+    func addProduct(for cell: ProductCell) {
+        if let indexPath = productsTableView.indexPath(for: cell) {
+            productsViewModel.addProduct(at: indexPath.row)
+            
+            if let updatedInfo = productsViewModel.products?[indexPath.row] {
+                cell.updateQuantityAndStockLabel(with: updatedInfo)
             }
         }
     }
+}
 

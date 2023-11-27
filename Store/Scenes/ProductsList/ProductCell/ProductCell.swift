@@ -41,7 +41,6 @@ class ProductCell: UITableViewCell {
     }
     
     func reload(with product: ProductModel) {
-        //TODO: reload images are not correct when reloading list after changing quantity
         setImage(from: product.thumbnail)
         prodTitleLbl.text = product.title
         stockLbl.text = "\(product.stock)"

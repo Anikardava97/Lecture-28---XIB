@@ -31,7 +31,6 @@ class ProductsListViewModel {
                 self?.delegate?.productsFetched(products)
             case .failure(let error):
                 self?.delegate?.showError(error)
-                break
             }
         }
     }
