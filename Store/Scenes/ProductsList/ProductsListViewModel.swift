@@ -8,7 +8,7 @@
 import Foundation
 
 protocol ProductsListViewModelDelegate: AnyObject {
-    func productsFetched()
+    func productsFetched(_ products: [ProductModel])
     func showError(_ receivedError: Error)
     func productsAmountChanged()
 }
@@ -28,8 +28,7 @@ class ProductsListViewModel {
         NetworkManager.shared.fetchProducts { [weak self] response in
             switch response {
             case .success(let products):
-                self?.products = products
-                self?.delegate?.productsFetched()
+                self?.delegate?.productsFetched(products)
             case .failure(let error):
                 self?.delegate?.showError(error)
                 break
